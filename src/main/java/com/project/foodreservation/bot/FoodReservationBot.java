@@ -19,10 +19,9 @@ public class FoodReservationBot extends TelegramLongPollingBot {
 
     private final FoodService foodService;
 
-    // Map مشترک: کد غذا → شیء Food
+    
     private final Map<Long, Food> foodMap = new HashMap<>();
 
-    // Map برای فاکتور هر کاربر: chatId → Map<کد غذا → تعداد>
     private final Map<Long, Map<Long, Integer>> userOrders = new HashMap<>();
 
     public FoodReservationBot(FoodService foodService) {
@@ -31,12 +30,12 @@ public class FoodReservationBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "HajVip_bot";
+        return "....YOUR BOT_bot";
     }
 
     @Override
     public String getBotToken() {
-        return "7774082073:AAGctzC6siDTf9F7D9tRLmPtIjs4evACIQ8";
+        return "....YOUR TOKEN";
     }
 
     @Override
@@ -55,15 +54,13 @@ public class FoodReservationBot extends TelegramLongPollingBot {
 
         if (text.equalsIgnoreCase("/start")) {
 
-            // فقط یک بار لود از دیتابیس
             if (foodMap.isEmpty()) {
                 List<Food> foods = foodService.load();
                 for (Food f : foods) {
-                    foodMap.put(f.getId(), f); // کد غذا → شیء Food
+                    foodMap.put(f.getId(), f);
                 }
             }
 
-            // شروع فاکتور کاربر
             userOrders.put(message.getChatId(), new HashMap<>());
 
             sendOrderMenu(message.getChatId(), message.getFrom().getUserName());
@@ -78,7 +75,7 @@ public class FoodReservationBot extends TelegramLongPollingBot {
         if (data == null) return;
 
         if (data.equals("DONE")) {
-            // فعلاً کاری انجام نمی‌دهیم
+            // todo
             return;
         }
 
@@ -87,11 +84,11 @@ public class FoodReservationBot extends TelegramLongPollingBot {
             Food food = foodMap.get(foodId);
             if (food == null) return;
 
-            // افزایش تعداد در فاکتور کاربر
+           
             Map<Long, Integer> order = userOrders.computeIfAbsent(chatId, k -> new HashMap<>());
             order.put(foodId, order.getOrDefault(foodId, 0) + 1);
 
-            // بروزرسانی فاکتور با کیبورد
+    
             sendOrderMenu(chatId, username);
 
         } catch (NumberFormatException ignored) {}
@@ -100,7 +97,7 @@ public class FoodReservationBot extends TelegramLongPollingBot {
     private void sendOrderMenu(Long chatId, String username) {
         Map<Long, Integer> order = userOrders.get(chatId);
 
-        // متن فاکتور
+         
         StringBuilder text = new StringBuilder(username + " عزیز، فاکتور شما:\n\n");
         for (Map.Entry<Long, Integer> entry : order.entrySet()) {
             Food f = foodMap.get(entry.getKey());
@@ -110,7 +107,7 @@ public class FoodReservationBot extends TelegramLongPollingBot {
             text.append("هیچ غذایی انتخاب نشده است.\n");
         }
 
-        // ساخت کیبورد شیشه‌ای
+        
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         for (Food f : foodMap.values()) {
@@ -120,7 +117,7 @@ public class FoodReservationBot extends TelegramLongPollingBot {
             rows.add(Collections.singletonList(btn));
         }
 
-        // دکمه "تمام"
+        
         InlineKeyboardButton doneBtn = new InlineKeyboardButton();
         doneBtn.setText("تمام");
         doneBtn.setCallbackData("DONE");
